@@ -1,11 +1,13 @@
-import express from 'express';
-import cors from 'cors';
-import mysql from 'mysql2/promise';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+import pkg from "pg";
 
 dotenv.config();
+
+const { Pool } = pkg;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,70 +22,68 @@ app.use(express.json());
 // ------------------------------
 // Serve frontend (web-build)
 // ------------------------------
-app.use(express.static(path.join(__dirname, 'web-build')));
+app.use(express.static(path.join(__dirname, "web-build")));
 
-// Database Connection Pool
+// ------------------------------
+// PostgreSQL Connection
+// ------------------------------
 let pool;
-if (process.env.DB_HOST) {
-    pool = mysql.createPool({
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
-        waitForConnections: true,
-        connectionLimit: 10,
-        queueLimit: 0
-    });
+
+if (process.env.DATABASE_URL) {
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    }
+  });
+  console.log("✅ Connected to PostgreSQL");
 } else {
-    console.warn("⚠️ No DB credentials found. Backend will run in mock mode.");
-    pool = {
-        execute: async () => { console.log("Mock DB execute"); return [{ insertId: 0 }]; },
-        getConnection: async () => ({
-            query: async () => { console.log("Mock DB query"); },
-            release: () => { }
-        })
-    };
+  console.warn("⚠️ No DATABASE_URL found. Backend running in mock mode.");
+  pool = {
+    query: async () => {
+      console.log("Mock DB query");
+      return { rows: [{ id: 0 }] };
+    }
+  };
 }
 
 // ----------------------------------------------------
-// Initialize DB Tables
+// Initialize DB Tables (PostgreSQL)
 // ----------------------------------------------------
 const initDB = async () => {
-    try {
-        const connection = await pool.getConnection();
+  try {
+    // Price Calculator Submissions
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS price_calculator_submissions (
+        id SERIAL PRIMARY KEY,
+        email TEXT NOT NULL,
+        message TEXT,
+        selections JSONB,
+        total_price INT DEFAULT 0,
+        monthly_price INT DEFAULT 0,
+        price_estimate TEXT,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
 
-        // Price Calculator Submissions
-        await connection.query(`
-            CREATE TABLE IF NOT EXISTS price_calculator_submissions (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                email VARCHAR(255) NOT NULL,
-                message TEXT,
-                selections JSON,
-                totalPrice INT DEFAULT 0,
-                monthlyPrice INT DEFAULT 0,
-                priceEstimate TEXT,
-                createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
+    // Cookie Consent
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS cookie_consent (
+        id SERIAL PRIMARY KEY,
+        status TEXT NOT NULL,
+        user_agent TEXT,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
 
-        // Cookie Consent
-        await connection.query(`
-            CREATE TABLE IF NOT EXISTS cookie_consent (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                status ENUM('necessary', 'marketing', 'statistics', 'accepted', 'rejected', 'custom') NOT NULL,
-                userAgent TEXT,
-                createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-
-        console.log("✅ Database initialized successfully.");
-        connection.release();
-    } catch (err) {
-        console.error("❌ Error initializing MySQL DB:", err);
-    }
+    console.log("✅ Database initialized successfully.");
+  } catch (err) {
+    console.error("❌ Error initializing PostgreSQL DB:", err);
+  }
 };
 
 initDB();
+
 
 // ----------------------------------------------------
 // ROUTES
