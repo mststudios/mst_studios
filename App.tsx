@@ -126,21 +126,7 @@ const Hero: React.FC<{ onOpenCalc: () => void }> = ({ onOpenCalc }) => {
                 />
               </div>
 
-              {/* Floating Badge - Chrome Rainbow Edition */}
-              <div className="absolute -top-6 -right-6 z-20 animate-bounce-slow">
-                <div className="bg-gradient-to-br from-pink-200 via-white to-cyan-200 p-6 rounded-3xl shadow-[0_0_40px_rgba(255,255,255,0.4)] border-2 border-white max-w-[200px] relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-white/40 to-transparent pointer-events-none"></div>
-                  <div className="flex items-center gap-3 mb-2 relative z-10">
-                    <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg shadow-black/20 ring-1 ring-black/10">
-                      <Code className="w-5 h-5" />
-                    </div>
-                    <span className="text-slate-700 font-black text-xs uppercase tracking-widest">Ekspertise</span>
-                  </div>
-                  <p className="text-slate-900 font-bold text-sm leading-snug relative z-10">
-                    5+ års erfaring i softwareudvikling og kodning
-                  </p>
-                </div>
-              </div>
+
             </div>
           </div>
         </div>

@@ -36,7 +36,7 @@ export const EMAIL_ADDRESS = "contact@mststudios.com";
 // Hosting & API Configuration
 // Use "/" for relative paths if backend is on same domain, 
 // or the full placeholder for staging.
-export const API_BASE_URL = "https://staging.mststudios.com/api";
+export const API_BASE_URL = "";
 
 export const getGmailLink = (email: string, customBody?: string) => {
   const subject = encodeURIComponent("Forespørgsel på samarbejde (via Prisberegner)");
@@ -91,8 +91,8 @@ export const CALCULATOR_STEPS = [
         id: 'simple',
         label: 'Simpel informationsside',
         sub: 'Klassisk site med info om ydelser og kontakt',
-        minPrice: 7000,
-        maxPrice: 7000,
+        minPrice: 3999,
+        maxPrice: 3999,
         monthlyPrice: 0,
         icon: <Layout className="w-5 h-5" />
       },
@@ -100,8 +100,8 @@ export const CALCULATOR_STEPS = [
         id: 'showcase',
         label: 'Portfolio / showcase',
         sub: 'Fremvis projekter eller cases',
-        minPrice: 8000,
-        maxPrice: 8000,
+        minPrice: 3999,
+        maxPrice: 3999,
         monthlyPrice: 0,
         icon: <Rocket className="w-5 h-5" />
       },
@@ -109,8 +109,8 @@ export const CALCULATOR_STEPS = [
         id: 'ecommerce',
         label: 'E-handels-side',
         sub: 'Sælg produkter med kurv og betaling',
-        minPrice: 10000,
-        maxPrice: 10000,
+        minPrice: 4999,
+        maxPrice: 4999,
         monthlyPrice: 0,
         icon: <ShoppingBag className="w-5 h-5" />
       }
@@ -122,15 +122,7 @@ export const CALCULATOR_STEPS = [
     description: "Vælg ekstra services for at styrke din løsning.",
     isMulti: true,
     options: [
-      {
-        id: 'seo',
-        label: 'SEO / søgemaskineoptimering',
-        sub: 'Hjælper hjemmesiden med at blive fundet på Google',
-        minPrice: 2000,
-        maxPrice: 2000,
-        monthlyPrice: 0,
-        icon: <Search className="w-5 h-5" />
-      },
+
       {
         id: 'maintenance',
         label: 'Vedligehold / support',

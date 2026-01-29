@@ -34,11 +34,34 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, pri
     if (!email) return;
     setIsLoading(true);
 
-    // Simuler afsendelse
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: "", // UI does not have a name field
+          email,
+          message: intro,
+          // Include other flags if backend wanted them, but prompt said keep it simple: name, email, message.
+          // However, let's append domain/hosting status to message for context?
+          // Prompt says "Receive name, email, and message."
+          // I'll stick to strict interpretation but maybe append domain info to message so it's not lost.
+          // "Do NOT modify any unrelated API routes or logic." implies keep it simple.
+          // user says "Respond with success or error JSON."
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+
       setStep(3); // gå til "tak" step
-    }, 1500);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      alert("Der opstod en fejl. Prøv igen.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClose = () => {

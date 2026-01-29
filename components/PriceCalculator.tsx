@@ -58,6 +58,9 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
       });
     });
 
+
+
+
     setTotalPrice(price);
     setMonthlyPrice(monthly);
   }, [selections]);

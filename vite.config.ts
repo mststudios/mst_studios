@@ -18,8 +18,25 @@ export default defineConfig(({ mode }) => {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
     },
     server: {
-      port: 3000,
-      host: '0.0.0.0'
+      port: 3003,
+      host: '0.0.0.0',
+      proxy: {
+        '/api': {
+          target: 'http://localhost:3004',
+          changeOrigin: true,
+          secure: false,
+        },
+        '/submit': {
+          target: 'http://localhost:3004',
+          changeOrigin: true,
+          secure: false,
+        },
+        '/cookie-consent': {
+          target: 'http://localhost:3004',
+          changeOrigin: true,
+          secure: false,
+        }
+      }
     },
     build: {
       outDir: 'web-build',      // IMPORTANT: ikke dist
