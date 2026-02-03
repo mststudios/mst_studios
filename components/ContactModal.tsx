@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Send, Mail, MessageSquare, Check, ArrowRight, Loader2, Globe, Server } from 'lucide-react';
+import { supabase } from '../src/supabaseClient';
 
 
 
@@ -35,24 +36,15 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, pri
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: "", // UI does not have a name field
-          email,
+      const { error } = await supabase
+        .from('leads')
+        .insert({
+          email: email,
           message: intro,
-          // Include other flags if backend wanted them, but prompt said keep it simple: name, email, message.
-          // However, let's append domain/hosting status to message for context?
-          // Prompt says "Receive name, email, and message."
-          // I'll stick to strict interpretation but maybe append domain info to message so it's not lost.
-          // "Do NOT modify any unrelated API routes or logic." implies keep it simple.
-          // user says "Respond with success or error JSON."
-        })
-      });
+        });
 
-      if (!response.ok) {
-        throw new Error('Failed to send message');
+      if (error) {
+        throw error;
       }
 
       setStep(3); // gå til "tak" step

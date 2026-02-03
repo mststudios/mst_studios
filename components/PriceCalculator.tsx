@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, ChevronRight, ChevronLeft, Check, Mail, Server, Loader2 } from 'lucide-react';
 import { CALCULATOR_STEPS, API_BASE_URL } from '../constants';
+import { supabase } from '../src/supabaseClient';
 
 interface PriceCalculatorProps {
   isOpen: boolean;
@@ -121,26 +122,17 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
     onFinalize(summary, selections);
 
     try {
-      // Construct the payload matching backend expectations
-      const payload = {
-        email,
-        message,
-        selections,
-        priceEstimate: summary, // Passing the summary string as expected
-        totalPrice,
-        monthlyPrice
-      };
+      const { error } = await supabase
+        .from('leads')
+        .insert({
+          email,
+          message,
+          selections,
+          total_price: totalPrice
+        });
 
-      const response = await fetch(`${API_BASE_URL}/submit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error('Backend responded with an error');
+      if (error) {
+        throw error;
       }
 
       setCurrentStep(4); // Go to Green Success Popup
