@@ -124,7 +124,7 @@ const Hero: React.FC<{ onOpenCalc: () => void }> = ({ onOpenCalc }) => {
                 }}
                 className="inline-flex items-center justify-center px-10 py-5 rounded-full font-bold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer border-2 border-blue-600 hover:border-blue-500 hover:bg-blue-600/10 text-white shadow-2xl h-[78px] w-full sm:w-auto"
               >
-                See an example &rarr;
+                Se et eksempel &rarr;
               </button>
             </div>
 
