@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ChevronLeft, Check, Loader2, Sparkles, Utensils, Wrench, ShoppingBag, HelpCircle, Mail, ArrowRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Check, Loader2, Sparkles, Utensils, Wrench, ShoppingBag, HelpCircle, Mail, ArrowRight } from 'lucide-react';
 import { submitCalculatorLead } from '../services/api';
 
 interface PriceCalculatorProps {
@@ -501,7 +501,7 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
 
         </div>
 
-        {/* Footer Nav for back navigation */}
+        {/* Footer Nav */}
         <div className="px-8 py-6 bg-slate-900 border-t border-white/5 flex items-center justify-between shrink-0">
           {currentStep > 0 && currentStep < 3 ? (
             <button
@@ -511,12 +511,21 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
               <ChevronLeft className="w-4 h-4" /> Tilbage
             </button>
           ) : (
-            <div></div> // Spacer
+            <div></div>
           )}
 
-          <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mr-2">
-            100% uforpligtende
-          </div>
+          {currentStep === 1 ? (
+            <button
+              onClick={() => setCurrentStep(2)}
+              className="flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-black text-sm uppercase tracking-widest rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-blue-600/30"
+            >
+              Næste <ChevronRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mr-2">
+              100% uforpligtende
+            </div>
+          )}
         </div>
 
       </div>
