@@ -63,3 +63,47 @@ export const submitCookieConsent = async (status: string): Promise<void> => {
     throw new Error('Failed to submit cookie consent')
   }
 }
+
+export interface CalculatorLeadPayload {
+  businessType: string;
+  selectedAddons: string[];
+  recommendedPackage: string;
+  email: string;
+}
+
+export const submitCalculatorLead = async (data: CalculatorLeadPayload): Promise<{ success: boolean; error?: string }> => {
+  if (!API_BASE_URL) {
+    console.error("VITE_API_URL is not defined");
+    return { success: false, error: "Configuration error" };
+  }
+
+  const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+  const url = `${baseUrl}/calculator-lead`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    let result;
+    const text = await response.text();
+    try {
+      result = text ? JSON.parse(text) : {};
+    } catch (e) {
+      result = { error: 'Invalid server response' };
+    }
+    
+    if (!response.ok) {
+      return { success: false, error: result.error || 'Submission failed' };
+    }
+    
+    return { success: true, ...result };
+  } catch (error) {
+    console.error("Error submitting calculator lead:", error);
+    return { success: false, error: 'Network error' };
+  }
+};
