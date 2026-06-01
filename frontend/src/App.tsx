@@ -97,7 +97,7 @@ const Hero: React.FC<{ onOpenCalc: () => void }> = ({ onOpenCalc }) => {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1] mb-8 tracking-tight italic drop-shadow-2xl">
               Glem de tunge bureaupriser – <br />
               få en hjemmeside <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-200 via-cyan-200 to-teal-200 underline decoration-teal-500/20 underline-offset-8 shadow-lg pr-2">der skaber resultater</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-200 via-cyan-200 to-teal-200 underline decoration-teal-500/20 underline-offset-8 shadow-lg pr-2">der bringer flere kunder ind ad døren</span>
             </h1>
 
             <p className="text-lg text-slate-400 mb-12 leading-relaxed font-medium max-w-2xl mx-auto lg:mx-0">
@@ -107,7 +107,25 @@ const Hero: React.FC<{ onOpenCalc: () => void }> = ({ onOpenCalc }) => {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6">
-              <PrisButton text="Start her" subText="Brug prisberegneren" onClick={onOpenCalc} />
+              <PrisButton className="w-full sm:w-auto" text="Start her" subText="Brug prisberegneren" onClick={onOpenCalc} />
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  const element = document.getElementById('portfolio');
+                  if (element) {
+                    const offset = 80; // Navbarens højde
+                    const elementPosition = element.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - offset;
+                    window.scrollTo({
+                      top: offsetPosition,
+                      behavior: 'smooth'
+                    });
+                  }
+                }}
+                className="inline-flex items-center justify-center px-10 py-5 rounded-full font-bold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer border-2 border-blue-600 hover:border-blue-500 hover:bg-blue-600/10 text-white shadow-2xl h-[78px] w-full sm:w-auto"
+              >
+                See an example &rarr;
+              </button>
             </div>
 
             {/* Trust pills */}
