@@ -464,7 +464,7 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
               <div className="pt-6 border-t border-white/5 space-y-6">
                 <div className="max-w-md mx-auto">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1 mb-2 block text-center">
-                    Indtast e-mail for at gemme estimat og booke opkald
+                    Indtast email for at gemme dine svar så jeg kan henvise mig til dig
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-4 top-3.5 w-4 h-4 text-slate-500" />
