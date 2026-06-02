@@ -1,27 +1,23 @@
-# MST Studios Deployment Guide
+# MST Studios Website
 
-This project is now consolidated for production. The root folder contains both the backend and the built frontend.
+A high-performance landing page and pricing calculator for MST Studios.
 
-## Deployment Steps
+## Project Structure
 
-1. **Environment Variables**:
-   - Create a `.env` file in the root based on `.env.example`.
-   - Fill in your Hostinger MySQL database credentials.
+- **frontend/**: Main website (React, TypeScript, Vite).
+- **backend/**: Serverless logic (Supabase Edge Functions).
 
-2. **Backend**:
-   - The backend is located in `server.js`.
-   - It is configured to serve the frontend build from the `dist/` folder.
-   - Run `npm install` (if not already done).
-   - Start the server using `npm start`.
+## Getting Started
 
-3. **Frontend**:
-   - The frontend is already built into the `dist/` folder.
-   - If you make changes to the source files (`src/`, `App.tsx`, etc.), run `npm run build` to update the `dist/` folder.
+### Frontend
+1. Navigate to the frontend directory: `cd frontend`
+2. Install dependencies: `npm install`
+3. Create `.env` based on `.env.example`.
+4. Run development server: `npm run dev`
 
-## Essential Files for Deployment
-You only need to copy these to your Hostinger server:
-- `dist/`
-- `server.js`
-- `package.json`
-- `package-lock.json`
-- `.env` (your production file)
+### Backend
+The backend consists of Supabase Edge Functions. See `deployment-notes.md` for details.
+
+## Deployment
+
+Refer to `deployment-notes.md` for strict instructions on deploying to Vercel and Supabase.
