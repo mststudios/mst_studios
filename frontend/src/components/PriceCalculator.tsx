@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { X, ChevronLeft, ChevronRight, Check, Loader2, Sparkles, Utensils, Wrench, ShoppingBag, HelpCircle, Stethoscope, ArrowRight } from 'lucide-react';
 import { submitCalculatorLead } from '../services/api';
 
@@ -10,7 +10,10 @@ interface PriceCalculatorProps {
 
 type BusinessType = 'Frisør / skønhed' | 'Restaurant / café' | 'Håndværker / servicefag' | 'Butik / webshop' | 'Klinik / behandler' | 'Andet';
 
-type CtaPackage = 'Starter' | 'Vækst' | 'Pro' | 'Skræddersyet';
+type PackageTier = 'Starter' | 'Vækst' | 'Pro';
+type SelectedPackage = PackageTier | 'Skræddersyet';
+
+const PACKAGE_TIERS: PackageTier[] = ['Starter', 'Vækst', 'Pro'];
 
 const BUSINESS_TYPES: BusinessType[] = [
   'Frisør / skønhed',
@@ -34,7 +37,7 @@ const ADDON_OPTIONS: AddonOption[] = [
 ];
 
 export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClose, onFinalize }) => {
-  const [currentStep, setCurrentStep] = useState(0); // 0: Business type, 1: Addons, 2: Recommendation & Table, 3: Success
+  const [currentStep, setCurrentStep] = useState(0); // 0–2: flow, 3: booking, 4: success
   const [businessType, setBusinessType] = useState<BusinessType | null>(null);
   const [addons, setAddons] = useState<Record<string, boolean>>({
     more_than_5_pages: false,
@@ -42,11 +45,13 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
     google_business: false,
     priority_support: false
   });
+  const [selectedPackage, setSelectedPackage] = useState<SelectedPackage | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [availability, setAvailability] = useState('');
   const [nameError, setNameError] = useState(false);
   const [emailError, setEmailError] = useState(false);
-  const [expandedCta, setExpandedCta] = useState<CtaPackage | null>(null);
+  const [availabilityError, setAvailabilityError] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
   // Reset on open
@@ -60,27 +65,31 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
         google_business: false,
         priority_support: false
       });
+      setSelectedPackage(null);
       setName('');
       setEmail('');
+      setAvailability('');
       setNameError(false);
       setEmailError(false);
-      setExpandedCta(null);
+      setAvailabilityError(false);
       setIsSending(false);
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  const recommendedPackage = useMemo((): PackageTier => {
+    const selectedAddonsCount = Object.values(addons).filter(Boolean).length;
+    if (selectedAddonsCount === 0) return 'Starter';
+    if (selectedAddonsCount <= 2) return 'Vækst';
+    return 'Pro';
+  }, [addons]);
 
-  // Recommendation logic
-  const selectedAddonsCount = Object.values(addons).filter(Boolean).length;
-  let recommendedPackage: 'Starter' | 'Vækst' | 'Pro' = 'Starter';
-  if (selectedAddonsCount === 0) {
-    recommendedPackage = 'Starter';
-  } else if (selectedAddonsCount === 1 || selectedAddonsCount === 2) {
-    recommendedPackage = 'Vækst';
-  } else {
-    recommendedPackage = 'Pro';
-  }
+  useEffect(() => {
+    if (currentStep === 2) {
+      setSelectedPackage(recommendedPackage);
+    }
+  }, [currentStep, recommendedPackage]);
+
+  if (!isOpen) return null;
 
   const handleBusinessTypeSelect = (type: BusinessType) => {
     setBusinessType(type);
@@ -97,46 +106,56 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailStr);
   };
 
-  const handleOpenCtaForm = (packageType: CtaPackage) => {
-    setExpandedCta((prev) => (prev === packageType ? null : packageType));
-    setNameError(false);
-    setEmailError(false);
+  const handleSelectPackage = (pkg: PackageTier) => {
+    setSelectedPackage(pkg);
   };
 
-  const handleFormSubmit = async (packageType: CtaPackage) => {
+  const handleBookCall = () => {
+    if (!selectedPackage) return;
+    setCurrentStep(3);
+  };
+
+  const handleFormSubmit = async () => {
     const trimmedName = name.trim();
+    const trimmedAvailability = availability.trim();
     const hasName = trimmedName.length > 0;
     const hasValidEmail = validateEmail(email);
+    const hasAvailability = trimmedAvailability.length > 0;
 
     setNameError(!hasName);
     setEmailError(!hasValidEmail);
-    if (!hasName || !hasValidEmail) return;
+    setAvailabilityError(!hasAvailability);
+    if (!hasName || !hasValidEmail || !hasAvailability || !selectedPackage) return;
 
     setIsSending(true);
 
     const selectedAddonsArray = Object.keys(addons).filter(key => addons[key]);
+    const chosen = selectedPackage;
 
-    const summary = `Prisberegner:\nNavn: ${trimmedName}\nVirksomhedstype: ${businessType}\nValgte tilvalg: ${selectedAddonsArray.join(', ') || 'Ingen'}\nAnbefalet pakke: ${recommendedPackage}\nValgt handling: ${packageType}\nE-mail: ${email}`;
+    const summary = `Prisberegner:\nNavn: ${trimmedName}\nVirksomhedstype: ${businessType}\nValgte tilvalg: ${selectedAddonsArray.join(', ') || 'Ingen'}\nAnbefalet pakke: ${recommendedPackage}\nValgt pakke: ${chosen}\nTilgængelighed: ${trimmedAvailability}\nE-mail: ${email}`;
     onFinalize(summary, {
       name: trimmedName,
       businessType,
       addons,
       recommendedPackage,
-      chosenCta: packageType,
+      chosenPackage: chosen,
+      availability: trimmedAvailability,
       email,
     });
 
     try {
       const response = await submitCalculatorLead({
         name: trimmedName,
+        email,
+        availability: trimmedAvailability,
         businessType: businessType || 'Andet',
         selectedAddons: selectedAddonsArray,
-        recommendedPackage: packageType === 'Skræddersyet' ? 'Skræddersyet' : recommendedPackage,
-        email,
+        recommendedPackage,
+        chosenPackage: chosen,
       });
 
       if (response.success) {
-        setCurrentStep(3);
+        setCurrentStep(4);
       } else {
         alert('Der opstod en fejl ved afsendelse. Prøv venligst igen.');
       }
@@ -148,52 +167,12 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
     }
   };
 
-  const renderInlineLeadForm = (packageType: CtaPackage) => {
-    if (expandedCta !== packageType) return null;
+  const packageSelectButtonClass = (pkg: PackageTier) =>
+    selectedPackage === pkg
+      ? 'w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-black text-sm rounded-xl transition-all duration-300 shadow-lg shadow-blue-500/30 border border-transparent'
+      : 'w-full py-3 px-4 bg-transparent text-white font-bold text-sm rounded-xl transition-all duration-300 border border-white/20 hover:border-white/40 hover:bg-white/5';
 
-    return (
-      <div className="mt-4 p-4 bg-slate-950/80 border border-white/10 rounded-xl space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            setNameError(false);
-          }}
-          placeholder="Dit navn"
-          className={`w-full bg-slate-900 border rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-600 ${nameError ? 'border-red-500/80' : 'border-white/10'}`}
-        />
-        {nameError && (
-          <p className="text-red-400 text-xs font-bold -mt-1">Indtast venligst dit navn</p>
-        )}
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            setEmailError(false);
-          }}
-          placeholder="din@email.dk"
-          className={`w-full bg-slate-900 border rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-600 ${emailError ? 'border-red-500/80' : 'border-white/10'}`}
-        />
-        {emailError && (
-          <p className="text-red-400 text-xs font-bold -mt-1">Indtast venligst en gyldig e-mailadresse</p>
-        )}
-        <button
-          type="button"
-          onClick={() => handleFormSubmit(packageType)}
-          disabled={isSending}
-          className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-black text-sm rounded-xl transition-all duration-300 shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 disabled:opacity-70"
-        >
-          {isSending ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            'Send — jeg ringer inden for 24 timer'
-          )}
-        </button>
-      </div>
-    );
-  };
+  const canBook = selectedPackage !== null;
 
   // Icons for business types
   const getBusinessIcon = (type: BusinessType) => {
@@ -214,8 +193,8 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
     }
   };
 
-  // SUCCESS STEP (3)
-  if (currentStep === 3) {
+  // SUCCESS STEP
+  if (currentStep === 4) {
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-955/90 backdrop-blur-md animate-in fade-in duration-300">
         <div className="bg-emerald-950/90 w-full max-w-lg rounded-[2.5rem] shadow-2xl border border-emerald-500/30 p-10 text-center animate-in zoom-in-95 duration-300 relative overflow-hidden">
@@ -252,7 +231,7 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
           <div>
             <h3 className="text-xl font-black text-white italic tracking-tight">Prisberegner</h3>
             <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">
-              Trin {currentStep + 1} af 3
+              Trin {Math.min(currentStep + 1, 4)} af 4
             </p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-400 hover:text-white">
@@ -264,7 +243,7 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
         <div className="h-1.5 bg-slate-800 w-full overflow-hidden shrink-0">
           <div
             className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-500 ease-out"
-            style={{ width: `${((currentStep + 1) / 3) * 100}%` }}
+            style={{ width: `${(Math.min(currentStep + 1, 4) / 4) * 100}%` }}
           />
         </div>
 
@@ -383,7 +362,7 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
                   <thead>
                     <tr className="border-b border-white/10 bg-white/[0.01]">
                       <th className="p-6 text-slate-400 font-bold uppercase text-xs tracking-wider w-1/4">Egenskaber</th>
-                      {(['Starter', 'Vækst', 'Pro'] as const).map((pkg) => {
+                      {PACKAGE_TIERS.map((pkg) => {
                         const isRec = recommendedPackage === pkg;
                         return (
                           <th key={pkg} className={`p-6 w-1/4 relative ${isRec ? 'bg-blue-500/5' : ''}`}>
@@ -441,31 +420,20 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
                       <td className={`p-6 text-slate-500 text-sm ${recommendedPackage === 'Vækst' ? 'bg-blue-500/5' : ''}`}>—</td>
                       <td className={`p-6 ${recommendedPackage === 'Pro' ? 'bg-blue-500/5' : ''}`}><Check className="w-5 h-5 text-emerald-400" /></td>
                     </tr>
-                    {/* Primary CTA Row */}
+                    {/* Package selection row */}
                     <tr>
                       <td className="p-6"></td>
-                      {(['Starter', 'Vækst', 'Pro'] as const).map((pkg) => {
+                      {PACKAGE_TIERS.map((pkg) => {
                         const isRec = recommendedPackage === pkg;
                         return (
                           <td key={pkg} className={`p-6 align-top ${isRec ? 'bg-blue-500/5' : ''}`}>
-                            <div>
-                              {isRec ? (
-                                <button
-                                  onClick={() => handleOpenCtaForm(pkg)}
-                                  className="w-full py-4 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-black text-sm uppercase tracking-wider rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2"
-                                >
-                                  Book et gratis opkald <ArrowRight className="w-4 h-4" />
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={() => handleOpenCtaForm(pkg)}
-                                  className="w-full py-3 px-4 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors border border-white/5 flex items-center justify-center"
-                                >
-                                  Vælg {pkg}
-                                </button>
-                              )}
-                              {renderInlineLeadForm(pkg)}
-                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleSelectPackage(pkg)}
+                              className={packageSelectButtonClass(pkg)}
+                            >
+                              Vælg {pkg}
+                            </button>
                           </td>
                         );
                       })}
@@ -476,7 +444,7 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
 
               {/* COMPARISON - MOBILE VIEW */}
               <div className="md:hidden space-y-6">
-                {(['Starter', 'Vækst', 'Pro'] as const).map((pkg) => {
+                {PACKAGE_TIERS.map((pkg) => {
                   const isRec = recommendedPackage === pkg;
                   const details = {
                     Starter: { price: '299 kr/md', pages: 'Op til 5', features: ['Hosting & domæne', 'SEO optimering'] },
@@ -517,31 +485,116 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
                       </ul>
 
                       <button
-                        onClick={() => handleOpenCtaForm(pkg)}
-                        className={`w-full py-4 px-4 font-black text-sm uppercase tracking-wider rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${isRec
-                            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-500 hover:to-purple-500 shadow-lg transform hover:scale-105 active:scale-95'
-                            : 'bg-slate-800 text-white hover:bg-slate-700 border border-white/5'
-                          }`}
+                        type="button"
+                        onClick={() => handleSelectPackage(pkg)}
+                        className={packageSelectButtonClass(pkg)}
                       >
-                        {isRec ? <>Book et gratis opkald <ArrowRight className="w-4 h-4" /></> : `Vælg ${pkg}`}
+                        Vælg {pkg}
                       </button>
-                      {renderInlineLeadForm(pkg)}
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Book call — below comparison */}
+              <div className="flex justify-center pt-2">
+                <button
+                  type="button"
+                  onClick={handleBookCall}
+                  disabled={!canBook}
+                  className={`w-full max-w-md py-4 px-6 font-black text-sm uppercase tracking-wider rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${
+                    canBook
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg shadow-blue-500/30 transform hover:scale-[1.02] active:scale-[0.98]'
+                      : 'bg-slate-800/60 text-slate-500 border border-white/5 cursor-not-allowed'
+                  }`}
+                >
+                  Book et gratis opkald <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
 
               {/* SECONDARY CTA */}
               <div className="pt-6 border-t border-white/5">
                 <div className="max-w-md mx-auto text-center">
                   <button
-                    onClick={() => handleOpenCtaForm('Skræddersyet')}
-                    className="text-slate-400 hover:text-white transition-colors font-bold text-sm border-b border-dashed border-slate-600 hover:border-white pb-0.5 tracking-tight"
+                    type="button"
+                    onClick={() => setSelectedPackage('Skræddersyet')}
+                    className={`transition-colors font-bold text-sm border-b pb-0.5 tracking-tight ${
+                      selectedPackage === 'Skræddersyet'
+                        ? 'text-blue-300 border-blue-400'
+                        : 'text-slate-400 hover:text-white border-dashed border-slate-600 hover:border-white'
+                    }`}
                   >
                     Jeg vil gerne diskutere en skræddersyet løsning →
                   </button>
-                  {renderInlineLeadForm('Skræddersyet')}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 4: BOOKING FORM */}
+          {currentStep === 3 && (
+            <div className="space-y-8 max-w-lg mx-auto">
+              <div className="text-center sm:text-left">
+                <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight italic">
+                  Næsten der — hvornår må jeg ringe?
+                </h2>
+              </div>
+
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setNameError(false);
+                  }}
+                  placeholder="Dit navn"
+                  className={`w-full bg-slate-900 border rounded-xl py-3.5 px-4 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-600 ${nameError ? 'border-red-500/80' : 'border-white/10'}`}
+                />
+                {nameError && (
+                  <p className="text-red-400 text-xs font-bold -mt-2">Indtast venligst dit navn</p>
+                )}
+
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setEmailError(false);
+                  }}
+                  placeholder="din@email.dk"
+                  className={`w-full bg-slate-900 border rounded-xl py-3.5 px-4 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-600 ${emailError ? 'border-red-500/80' : 'border-white/10'}`}
+                />
+                {emailError && (
+                  <p className="text-red-400 text-xs font-bold -mt-2">Indtast venligst en gyldig e-mailadresse</p>
+                )}
+
+                <input
+                  type="text"
+                  value={availability}
+                  onChange={(e) => {
+                    setAvailability(e.target.value);
+                    setAvailabilityError(false);
+                  }}
+                  placeholder="Hvornår kan jeg bedst fange dig? (fx. hverdage 8-16)"
+                  className={`w-full bg-slate-900 border rounded-xl py-3.5 px-4 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-600 ${availabilityError ? 'border-red-500/80' : 'border-white/10'}`}
+                />
+                {availabilityError && (
+                  <p className="text-red-400 text-xs font-bold -mt-2">Fortæl os hvornår vi bedst kan ringe</p>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleFormSubmit}
+                  disabled={isSending}
+                  className="w-full py-4 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-black text-sm rounded-xl transition-all duration-300 shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 disabled:opacity-70 mt-2"
+                >
+                  {isSending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    'Send — jeg ringer inden for 24 timer'
+                  )}
+                </button>
               </div>
             </div>
           )}
@@ -550,7 +603,7 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
 
         {/* Footer Nav */}
         <div className="px-8 py-6 bg-slate-900 border-t border-white/5 flex items-center justify-between shrink-0">
-          {currentStep > 0 && currentStep < 3 ? (
+          {currentStep > 0 && currentStep < 4 ? (
             <button
               onClick={() => setCurrentStep(prev => prev - 1)}
               className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors font-bold text-xs uppercase tracking-widest pl-2"

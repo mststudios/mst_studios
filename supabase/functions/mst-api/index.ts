@@ -61,7 +61,15 @@ serve(async (req) => {
     // POST /calculator-lead
     if (req.method === 'POST' && path === 'calculator-lead') {
       const body = await req.json()
-      const { name, businessType, selectedAddons, recommendedPackage, email } = body
+      const {
+        name,
+        email,
+        availability,
+        businessType,
+        selectedAddons,
+        recommendedPackage,
+        chosenPackage,
+      } = body
 
       if (!email) {
         return new Response(
@@ -74,10 +82,12 @@ serve(async (req) => {
         .from('price_calculator_leads')
         .insert({
           name: (name || '').trim(),
+          email,
+          availability: (availability || '').trim(),
           business_type: businessType || '',
           selected_addons: selectedAddons || [],
           recommended_package: recommendedPackage || '',
-          email,
+          chosen_package: chosenPackage || '',
         })
 
       if (error) {

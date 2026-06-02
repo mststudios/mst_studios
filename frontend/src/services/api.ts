@@ -66,10 +66,12 @@ export const submitCookieConsent = async (status: string): Promise<void> => {
 
 export interface CalculatorLeadPayload {
   name: string;
+  email: string;
+  availability: string;
   businessType: string;
   selectedAddons: string[];
   recommendedPackage: string;
-  email: string;
+  chosenPackage: string;
 }
 
 export const submitCalculatorLead = async (data: CalculatorLeadPayload): Promise<{ success: boolean; error?: string }> => {
