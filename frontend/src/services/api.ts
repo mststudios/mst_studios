@@ -65,6 +65,7 @@ export const submitCookieConsent = async (status: string): Promise<void> => {
 }
 
 export interface CalculatorLeadPayload {
+  name: string;
   businessType: string;
   selectedAddons: string[];
   recommendedPackage: string;

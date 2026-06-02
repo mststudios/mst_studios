@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, Check, Loader2, Sparkles, Utensils, Wrench, ShoppingBag, HelpCircle, Mail, ArrowRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Check, Loader2, Sparkles, Utensils, Wrench, ShoppingBag, HelpCircle, Stethoscope, ArrowRight } from 'lucide-react';
 import { submitCalculatorLead } from '../services/api';
 
 interface PriceCalculatorProps {
@@ -8,7 +8,18 @@ interface PriceCalculatorProps {
   onFinalize: (summary: string, selections: Record<string, any>) => void;
 }
 
-type BusinessType = 'Frisør / skønhed' | 'Restaurant / café' | 'Håndværker / servicefag' | 'Butik / webshop' | 'Andet';
+type BusinessType = 'Frisør / skønhed' | 'Restaurant / café' | 'Håndværker / servicefag' | 'Butik / webshop' | 'Klinik / behandler' | 'Andet';
+
+type CtaPackage = 'Starter' | 'Vækst' | 'Pro' | 'Skræddersyet';
+
+const BUSINESS_TYPES: BusinessType[] = [
+  'Frisør / skønhed',
+  'Restaurant / café',
+  'Håndværker / servicefag',
+  'Butik / webshop',
+  'Klinik / behandler',
+  'Andet',
+];
 
 interface AddonOption {
   id: string;
@@ -31,8 +42,11 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
     google_business: false,
     priority_support: false
   });
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [nameError, setNameError] = useState(false);
   const [emailError, setEmailError] = useState(false);
+  const [expandedCta, setExpandedCta] = useState<CtaPackage | null>(null);
   const [isSending, setIsSending] = useState(false);
 
   // Reset on open
@@ -46,8 +60,11 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
         google_business: false,
         priority_support: false
       });
+      setName('');
       setEmail('');
+      setNameError(false);
       setEmailError(false);
+      setExpandedCta(null);
       setIsSending(false);
     }
   }, [isOpen]);
@@ -80,36 +97,46 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailStr);
   };
 
-  const handleCtaClick = async (packageType: 'Starter' | 'Vækst' | 'Pro' | 'Skræddersyet') => {
-    if (!email || !validateEmail(email)) {
-      setEmailError(true);
-      return;
-    }
+  const handleOpenCtaForm = (packageType: CtaPackage) => {
+    setExpandedCta((prev) => (prev === packageType ? null : packageType));
+    setNameError(false);
     setEmailError(false);
+  };
+
+  const handleFormSubmit = async (packageType: CtaPackage) => {
+    const trimmedName = name.trim();
+    const hasName = trimmedName.length > 0;
+    const hasValidEmail = validateEmail(email);
+
+    setNameError(!hasName);
+    setEmailError(!hasValidEmail);
+    if (!hasName || !hasValidEmail) return;
+
     setIsSending(true);
 
     const selectedAddonsArray = Object.keys(addons).filter(key => addons[key]);
-    
-    // Call parent finalize callback
-    const summary = `Prisberegner:\nVirksomhedstype: ${businessType}\nValgte tilvalg: ${selectedAddonsArray.join(', ') || 'Ingen'}\nAnbefalet pakke: ${recommendedPackage}\nValgt handling: ${packageType}\nE-mail: ${email}`;
+
+    const summary = `Prisberegner:\nNavn: ${trimmedName}\nVirksomhedstype: ${businessType}\nValgte tilvalg: ${selectedAddonsArray.join(', ') || 'Ingen'}\nAnbefalet pakke: ${recommendedPackage}\nValgt handling: ${packageType}\nE-mail: ${email}`;
     onFinalize(summary, {
+      name: trimmedName,
       businessType,
       addons,
       recommendedPackage,
       chosenCta: packageType,
-      email
+      email,
     });
 
     try {
       const response = await submitCalculatorLead({
+        name: trimmedName,
         businessType: businessType || 'Andet',
         selectedAddons: selectedAddonsArray,
         recommendedPackage: packageType === 'Skræddersyet' ? 'Skræddersyet' : recommendedPackage,
-        email
+        email,
       });
 
       if (response.success) {
-        setCurrentStep(3); // Success Screen
+        setCurrentStep(3);
       } else {
         alert('Der opstod en fejl ved afsendelse. Prøv venligst igen.');
       }
@@ -119,6 +146,53 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
     } finally {
       setIsSending(false);
     }
+  };
+
+  const renderInlineLeadForm = (packageType: CtaPackage) => {
+    if (expandedCta !== packageType) return null;
+
+    return (
+      <div className="mt-4 p-4 bg-slate-950/80 border border-white/10 rounded-xl space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+            setNameError(false);
+          }}
+          placeholder="Dit navn"
+          className={`w-full bg-slate-900 border rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-600 ${nameError ? 'border-red-500/80' : 'border-white/10'}`}
+        />
+        {nameError && (
+          <p className="text-red-400 text-xs font-bold -mt-1">Indtast venligst dit navn</p>
+        )}
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setEmailError(false);
+          }}
+          placeholder="din@email.dk"
+          className={`w-full bg-slate-900 border rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-600 ${emailError ? 'border-red-500/80' : 'border-white/10'}`}
+        />
+        {emailError && (
+          <p className="text-red-400 text-xs font-bold -mt-1">Indtast venligst en gyldig e-mailadresse</p>
+        )}
+        <button
+          type="button"
+          onClick={() => handleFormSubmit(packageType)}
+          disabled={isSending}
+          className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-black text-sm rounded-xl transition-all duration-300 shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 disabled:opacity-70"
+        >
+          {isSending ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            'Send — jeg ringer inden for 24 timer'
+          )}
+        </button>
+      </div>
+    );
   };
 
   // Icons for business types
@@ -133,6 +207,8 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
         return <Wrench className={iconClass} />;
       case 'Butik / webshop':
         return <ShoppingBag className={iconClass} />;
+      case 'Klinik / behandler':
+        return <Stethoscope className={iconClass} />;
       default:
         return <HelpCircle className={iconClass} />;
     }
@@ -208,23 +284,21 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {(['Frisør / skønhed', 'Restaurant / café', 'Håndværker / servicefag', 'Butik / webshop', 'Andet'] as BusinessType[]).map((type) => {
+                {BUSINESS_TYPES.map((type) => {
                   const isSelected = businessType === type;
                   return (
                     <button
                       key={type}
                       onClick={() => handleBusinessTypeSelect(type)}
-                      className={`p-6 rounded-2xl border text-left transition-all duration-300 flex flex-col gap-4 relative overflow-hidden group ${
-                        isSelected
+                      className={`p-6 rounded-2xl border text-left transition-all duration-300 flex flex-col gap-4 relative overflow-hidden group ${isSelected
                           ? 'border-blue-500 bg-gradient-to-br from-blue-900/40 to-purple-900/20 shadow-lg shadow-blue-500/10'
                           : 'border-white/10 hover:border-white/20 hover:bg-white/5'
-                      }`}
+                        }`}
                     >
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
-                        isSelected
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${isSelected
                           ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg'
                           : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white'
-                      }`}>
+                        }`}>
                         {getBusinessIcon(type)}
                       </div>
                       <div>
@@ -262,21 +336,19 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
                       <div className="flex gap-2 shrink-0">
                         <button
                           onClick={() => handleToggleAddon(addon.id, true)}
-                          className={`px-6 py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-200 w-24 flex items-center justify-center ${
-                            val === true
+                          className={`px-6 py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-200 w-24 flex items-center justify-center ${val === true
                               ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
                               : 'bg-slate-900 text-slate-400 border border-white/5 hover:bg-slate-800'
-                          }`}
+                            }`}
                         >
                           Ja
                         </button>
                         <button
                           onClick={() => handleToggleAddon(addon.id, false)}
-                          className={`px-6 py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-200 w-24 flex items-center justify-center ${
-                            val === false
+                          className={`px-6 py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-200 w-24 flex items-center justify-center ${val === false
                               ? 'bg-slate-800 border border-white/10 text-white'
                               : 'bg-slate-900 text-slate-400 border border-white/5 hover:bg-slate-800'
-                          }`}
+                            }`}
                         >
                           Nej
                         </button>
@@ -375,24 +447,25 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
                       {(['Starter', 'Vækst', 'Pro'] as const).map((pkg) => {
                         const isRec = recommendedPackage === pkg;
                         return (
-                          <td key={pkg} className={`p-6 ${isRec ? 'bg-blue-500/5' : ''}`}>
-                            {isRec ? (
-                              <button
-                                onClick={() => handleCtaClick(pkg)}
-                                disabled={isSending}
-                                className="w-full py-4 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-black text-sm uppercase tracking-wider rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2"
-                              >
-                                {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Book gratis opkald <ArrowRight className="w-4 h-4" /></>}
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() => handleCtaClick(pkg)}
-                                disabled={isSending}
-                                className="w-full py-3 px-4 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors border border-white/5 flex items-center justify-center"
-                              >
-                                Vælg {pkg}
-                              </button>
-                            )}
+                          <td key={pkg} className={`p-6 align-top ${isRec ? 'bg-blue-500/5' : ''}`}>
+                            <div>
+                              {isRec ? (
+                                <button
+                                  onClick={() => handleOpenCtaForm(pkg)}
+                                  className="w-full py-4 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-black text-sm uppercase tracking-wider rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2"
+                                >
+                                  Book et gratis opkald <ArrowRight className="w-4 h-4" />
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleOpenCtaForm(pkg)}
+                                  className="w-full py-3 px-4 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors border border-white/5 flex items-center justify-center"
+                                >
+                                  Vælg {pkg}
+                                </button>
+                              )}
+                              {renderInlineLeadForm(pkg)}
+                            </div>
                           </td>
                         );
                       })}
@@ -414,11 +487,10 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
                   return (
                     <div
                       key={pkg}
-                      className={`p-6 rounded-2xl border transition-all relative ${
-                        isRec
+                      className={`p-6 rounded-2xl border transition-all relative ${isRec
                           ? 'border-blue-500 bg-gradient-to-b from-slate-900 to-blue-950/20 shadow-xl shadow-blue-500/5'
                           : 'border-white/5 bg-slate-800/20'
-                      }`}
+                        }`}
                     >
                       {isRec && (
                         <span className="absolute -top-3 left-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black text-[9px] uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">
@@ -445,55 +517,30 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
                       </ul>
 
                       <button
-                        onClick={() => handleCtaClick(pkg)}
-                        disabled={isSending}
-                        className={`w-full py-4 px-4 font-black text-sm uppercase tracking-wider rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${
-                          isRec
+                        onClick={() => handleOpenCtaForm(pkg)}
+                        className={`w-full py-4 px-4 font-black text-sm uppercase tracking-wider rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${isRec
                             ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-500 hover:to-purple-500 shadow-lg transform hover:scale-105 active:scale-95'
                             : 'bg-slate-800 text-white hover:bg-slate-700 border border-white/5'
-                        }`}
+                          }`}
                       >
-                        {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : isRec ? <>Book gratis opkald <ArrowRight className="w-4 h-4" /></> : `Vælg ${pkg}`}
+                        {isRec ? <>Book et gratis opkald <ArrowRight className="w-4 h-4" /></> : `Vælg ${pkg}`}
                       </button>
+                      {renderInlineLeadForm(pkg)}
                     </div>
                   );
                 })}
               </div>
 
-              {/* EMAIL CAPTURE & SECONDARY CTA CONTAINER */}
-              <div className="pt-6 border-t border-white/5 space-y-6">
-                <div className="max-w-md mx-auto">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1 mb-2 block text-center">
-                    Indtast email for at gemme dine svar så jeg kan henvise mig til dig
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-3.5 w-4 h-4 text-slate-500" />
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        setEmailError(false);
-                      }}
-                      placeholder="din@email.dk"
-                      className={`w-full bg-slate-950 border rounded-xl py-3 pl-11 pr-4 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-600 ${
-                        emailError ? 'border-red-500/80 shadow-md shadow-red-500/10' : 'border-white/10'
-                      }`}
-                    />
-                  </div>
-                  {emailError && (
-                    <p className="text-red-400 text-xs font-bold mt-2 ml-1 text-center">Indtast venligst en gyldig e-mailadresse</p>
-                  )}
-                </div>
-
-                <div className="text-center">
+              {/* SECONDARY CTA */}
+              <div className="pt-6 border-t border-white/5">
+                <div className="max-w-md mx-auto text-center">
                   <button
-                    onClick={() => handleCtaClick('Skræddersyet')}
-                    disabled={isSending}
+                    onClick={() => handleOpenCtaForm('Skræddersyet')}
                     className="text-slate-400 hover:text-white transition-colors font-bold text-sm border-b border-dashed border-slate-600 hover:border-white pb-0.5 tracking-tight"
                   >
                     Jeg vil gerne diskutere en skræddersyet løsning →
                   </button>
+                  {renderInlineLeadForm('Skræddersyet')}
                 </div>
               </div>
             </div>
