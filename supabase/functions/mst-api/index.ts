@@ -66,9 +66,11 @@ serve(async (req) => {
         email,
         availability,
         businessType,
-        selectedAddons,
+        needsExtraPages,
+        needsUpdates,
+        needsGoogleBusiness,
+        needsPrioritySupport,
         recommendedPackage,
-        chosenPackage,
       } = body
 
       if (!email) {
@@ -85,9 +87,11 @@ serve(async (req) => {
           email,
           availability: (availability || '').trim(),
           business_type: businessType || '',
-          selected_addons: selectedAddons || [],
+          needs_extra_pages: needsExtraPages ?? false,
+          needs_updates: needsUpdates ?? false,
+          needs_google_business: needsGoogleBusiness ?? false,
+          needs_priority_support: needsPrioritySupport ?? false,
           recommended_package: recommendedPackage || '',
-          chosen_package: chosenPackage || '',
         })
 
       if (error) {

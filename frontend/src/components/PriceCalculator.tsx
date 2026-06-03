@@ -149,9 +149,11 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
         email,
         availability: trimmedAvailability,
         businessType: businessType || 'Andet',
-        selectedAddons: selectedAddonsArray,
-        recommendedPackage,
-        chosenPackage: chosen,
+        needsExtraPages: addons.more_than_5_pages,
+        needsUpdates: addons.maintenance,
+        needsGoogleBusiness: addons.google_business,
+        needsPrioritySupport: addons.priority_support,
+        recommendedPackage: chosen,
       });
 
       if (response.success) {

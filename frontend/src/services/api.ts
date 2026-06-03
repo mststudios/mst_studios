@@ -69,9 +69,11 @@ export interface CalculatorLeadPayload {
   email: string;
   availability: string;
   businessType: string;
-  selectedAddons: string[];
+  needsExtraPages: boolean;
+  needsUpdates: boolean;
+  needsGoogleBusiness: boolean;
+  needsPrioritySupport: boolean;
   recommendedPackage: string;
-  chosenPackage: string;
 }
 
 export const submitCalculatorLead = async (data: CalculatorLeadPayload): Promise<{ success: boolean; error?: string }> => {
