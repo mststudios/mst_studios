@@ -159,11 +159,11 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
       if (response.success) {
         setCurrentStep(4);
       } else {
-        alert('Der opstod en fejl ved afsendelse. Prøv venligst igen.');
+        alert('Noget gik galt — prøv igen eller skriv til mig direkte.');
       }
     } catch (e) {
       console.error(e);
-      alert('Netværksfejl. Prøv venligst igen.');
+      alert('Noget gik galt — prøv igen eller skriv til mig direkte.');
     } finally {
       setIsSending(false);
     }
@@ -206,7 +206,7 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
             <Check className="w-10 h-10 text-emerald-400" />
           </div>
 
-          <h2 className="text-3xl font-black text-white mb-4 italic tracking-tight">Mange tak!</h2>
+          <h2 className="text-3xl font-black text-white mb-4 italic tracking-tight">Tak! Jeg ringer til dig inden for 24 timer. 🎉</h2>
           <p className="text-emerald-100 text-lg mb-8 leading-relaxed">
             Dine oplysninger er modtaget. Vi kontakter dig inden for kort tid for at aftale dit gratis opkald.
           </p>

@@ -12,7 +12,7 @@ import { PriceCalculator } from './components/PriceCalculator';
 import { StickyCTA } from './components/StickyCTA';
 import { PrivacyModal } from './components/PrivacyModal';
 import { CookieBanner } from './components/CookieBanner';
-import { Mail, ExternalLink, Sparkles, Code, Heart, Phone, Calculator, CheckCircle2, MapPin, Shield, Cookie, Zap, PiggyBank, Smartphone, Layout, TrendingUp, Users, PhoneCall, Eye } from 'lucide-react';
+import { Mail, ExternalLink, Sparkles, Code, Heart, Phone, Calculator, CheckCircle2, MapPin, Shield, Cookie, Zap, PiggyBank, Smartphone, Layout, TrendingUp, Users, PhoneCall, Eye, Monitor } from 'lucide-react';
 
 const Navbar: React.FC<{ onOpenCalc: () => void }> = ({ onOpenCalc }) => {
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
@@ -140,7 +140,7 @@ const Hero: React.FC<{ onOpenCalc: () => void }> = ({ onOpenCalc }) => {
                 📱 Mobiloptimeret
               </span>
               <span className="bg-purple-500/10 border border-purple-500/20 rounded-full px-4 py-1.5 text-xs font-bold text-purple-300">
-                🔒 Ingen binding
+                <TrendingUp className="w-3 h-3 inline mr-1" /> Bedre online synlighed
               </span>
             </div>
 
@@ -406,10 +406,10 @@ const Process: React.FC<{ onOpenCalc: () => void }> = ({ onOpenCalc }) => {
               },
               {
                 number: '02',
-                title: 'Gennemgang via Mail',
+                title: 'Gennemgang via møde',
                 description: 'Vi tager en hurtig dialog om dine specifikke behov og mål.',
                 color: 'purple',
-                icon: <Mail className="w-5 h-5" />,
+                icon: <Monitor className="w-5 h-5" />,
                 bg: 'bg-purple-500/15',
                 border: 'border-purple-500/30',
                 text: 'text-purple-400',

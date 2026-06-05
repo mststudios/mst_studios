@@ -81,17 +81,20 @@ serve(async (req) => {
       }
 
       const { error } = await supabase
-        .from('price_calculator_leads')
+        .from('price_calculator_submissions')
         .insert({
-          name: (name || '').trim(),
           email,
-          availability: (availability || '').trim(),
-          business_type: businessType || '',
-          needs_extra_pages: needsExtraPages ?? false,
-          needs_updates: needsUpdates ?? false,
-          needs_google_business: needsGoogleBusiness ?? false,
-          needs_priority_support: needsPrioritySupport ?? false,
-          recommended_package: recommendedPackage || '',
+          selections: {
+            business_type: businessType || '',
+            needs_extra_pages: needsExtraPages ?? false,
+            needs_updates: needsUpdates ?? false,
+            needs_google_business: needsGoogleBusiness ?? false,
+            needs_priority_support: needsPrioritySupport ?? false,
+            recommended_package: recommendedPackage || '',
+            name: (name || '').trim(),
+            availability: (availability || '').trim(),
+          },
+          price_estimate: recommendedPackage || '',
         })
 
       if (error) {
