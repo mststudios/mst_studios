@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import { submitCookieConsent } from '../services/api';
 
 interface CookieBannerProps {
@@ -7,25 +8,26 @@ interface CookieBannerProps {
 }
 
 export const CookieBanner: React.FC<CookieBannerProps> = ({ isOpen, onClose }) => {
-  const [show, setShow] = useState(false);
+  const [showBanner, setShowBanner] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const consent = localStorage.getItem('cookie_consent');
     if (!consent) {
-      setShow(true);
+      setShowBanner(true);
     }
   }, []);
 
   useEffect(() => {
     if (isOpen) {
-      setShow(true);
+      setShowModal(true);
+      setShowBanner(false);
     }
   }, [isOpen]);
 
-  const handleConsent = async (status: 'accepted' | 'declined') => {
+  const handleConsent = async (status: 'accepted_all' | 'necessary_only' | 'declined') => {
     localStorage.setItem('cookie_consent', status);
-    setShow(false);
-    onClose();
+    setShowBanner(false);
     
     try {
       await submitCookieConsent(status);
@@ -34,32 +36,80 @@ export const CookieBanner: React.FC<CookieBannerProps> = ({ isOpen, onClose }) =
     }
   };
 
-  if (!show) return null;
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[150] p-4 md:p-6 animate-in slide-in-from-bottom-10 duration-500">
-      <div className="max-w-4xl mx-auto bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-blue-900/20 p-6 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500"></div>
-        
-        <p className="text-slate-300 text-sm leading-relaxed font-medium">
-          Vi bruger cookies for at forbedre din oplevelse på siden.
-        </p>
+    <>
+      {showBanner && !showModal && (
+        <div className="fixed bottom-0 left-0 right-0 z-[150] p-4 md:p-6 animate-in slide-in-from-bottom-10 duration-500">
+          <div className="max-w-6xl mx-auto bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-blue-900/20 p-6 flex flex-col lg:flex-row items-center justify-between gap-6 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500"></div>
+            
+            <div className="flex-1">
+              <p className="text-slate-300 text-sm leading-relaxed font-medium">
+                Vi bruger cookies for at give dig den bedste oplevelse. Læs vores cookiepolitik for at lære mere.
+              </p>
+            </div>
 
-        <div className="flex gap-3 w-full md:w-auto shrink-0">
-          <button
-            onClick={() => handleConsent('declined')}
-            className="flex-1 md:flex-none px-6 py-3 rounded-xl border border-white/10 bg-slate-800 text-white font-bold text-xs uppercase tracking-wider hover:bg-slate-700 transition-colors"
-          >
-            Afvis
-          </button>
-          <button
-            onClick={() => handleConsent('accepted')}
-            className="flex-1 md:flex-none px-6 py-3 rounded-xl bg-blue-600 text-white font-bold text-xs uppercase tracking-wider hover:bg-blue-500 shadow-lg shadow-blue-900/30 transition-colors"
-          >
-            Accepter
-          </button>
+            <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0 w-full lg:w-auto">
+              <button 
+                onClick={() => setShowModal(true)} 
+                className="text-blue-400 hover:text-blue-300 underline text-sm font-medium mr-2"
+              >
+                Cookiepolitik
+              </button>
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                <button
+                  onClick={() => handleConsent('declined')}
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-white/10 bg-slate-800 text-white font-bold text-xs uppercase tracking-wider hover:bg-slate-700 transition-colors"
+                >
+                  Afvis
+                </button>
+                <button
+                  onClick={() => handleConsent('necessary_only')}
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-white/10 bg-slate-800 text-white font-bold text-xs uppercase tracking-wider hover:bg-slate-700 transition-colors whitespace-nowrap"
+                >
+                  Kun nødvendige
+                </button>
+                <button
+                  onClick={() => handleConsent('accepted_all')}
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs uppercase tracking-wider hover:bg-blue-500 shadow-lg shadow-blue-900/30 transition-colors whitespace-nowrap"
+                >
+                  Accepter alle
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+
+      {showModal && (
+        <div className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-slate-900 w-full max-w-xl rounded-[2rem] shadow-2xl border border-white/10 flex flex-col animate-in zoom-in-95 duration-300 relative overflow-hidden">
+            <div className="p-8 pb-6 bg-slate-900 border-b border-white/5 relative">
+              <button onClick={() => { setShowModal(false); onClose(); if (!localStorage.getItem('cookie_consent')) setShowBanner(true); }} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+              <h2 className="text-2xl font-black text-white italic tracking-tight">Cookiepolitik for MST Studios</h2>
+            </div>
+            
+            <div className="p-8 space-y-6 text-slate-300 text-sm leading-relaxed font-medium">
+              <p>Vi bruger følgende typer cookies:</p>
+              
+              <div className="space-y-1">
+                <h4 className="text-white font-bold text-base">Nødvendige cookies:</h4>
+                <p className="text-slate-400">Disse er nødvendige for at hjemmesiden fungerer korrekt og kan ikke slås fra.</p>
+              </div>
+
+              <div className="space-y-1">
+                <h4 className="text-white font-bold text-base">Analytiske cookies:</h4>
+                <p className="text-slate-400">Vi bruger anonyme data til at forstå hvordan besøgende bruger vores hjemmeside, så vi kan forbedre den.</p>
+              </div>
+
+              <p>Vi deler ikke dine data med tredjeparter til markedsføringsformål.</p>
+              <p>Du kan til enhver tid ændre dine cookie-præferencer ved at klikke på "Cookiepolitik" i sidens footer.</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };

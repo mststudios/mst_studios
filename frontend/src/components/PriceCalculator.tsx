@@ -207,7 +207,7 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
             <Check className="w-10 h-10 text-emerald-400" />
           </div>
 
-          <h2 className="text-3xl font-black text-white mb-4 italic tracking-tight">Tak! Jeg kontakter dig inden 24 timer for at booke vores møde. 🎉</h2>
+          <h2 className="text-3xl font-black text-white mb-4 italic tracking-tight">Tak! Vi ringer dig op inden for 24 timer for at booke vores møde. 🎉</h2>
           <p className="text-emerald-100 text-lg mb-8 leading-relaxed">
             Dine oplysninger er modtaget. Vi kontakter dig inden for kort tid for at aftale dit gratis opkald.
           </p>
@@ -595,7 +595,7 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
                   {isSending ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    'Send — jeg booker et møde med dig inden 24 timer'
+                    'Kom i gang — jeg ringer dig op inden for 24 timer'
                   )}
                 </button>
               </div>
