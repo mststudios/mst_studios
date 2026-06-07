@@ -128,6 +128,7 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
     if (!hasName || !hasValidEmail || !hasAvailability || !selectedPackage) return;
 
     setIsSending(true);
+    console.log("Form submitted");
 
     const selectedAddonsArray = Object.keys(addons).filter(key => addons[key]);
     const chosen = selectedPackage;
@@ -206,7 +207,7 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
             <Check className="w-10 h-10 text-emerald-400" />
           </div>
 
-          <h2 className="text-3xl font-black text-white mb-4 italic tracking-tight">Tak! Jeg ringer til dig inden for 24 timer. 🎉</h2>
+          <h2 className="text-3xl font-black text-white mb-4 italic tracking-tight">Tak! Jeg kontakter dig inden 24 timer for at booke vores møde. 🎉</h2>
           <p className="text-emerald-100 text-lg mb-8 leading-relaxed">
             Dine oplysninger er modtaget. Vi kontakter dig inden for kort tid for at aftale dit gratis opkald.
           </p>
@@ -538,7 +539,7 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
             <div className="space-y-8 max-w-lg mx-auto">
               <div className="text-center sm:text-left">
                 <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight italic">
-                  Næsten der — hvornår må jeg ringe?
+                  Næsten der — hvornår passer det dig?
                 </h2>
               </div>
 
@@ -578,7 +579,7 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
                     setAvailability(e.target.value);
                     setAvailabilityError(false);
                   }}
-                  placeholder="Hvornår kan jeg bedst fange dig? (fx. hverdage 8-16)"
+                  placeholder="Hvornår passer et kort online møde? (fx. tirsdag eftermiddag)"
                   className={`w-full bg-slate-900 border rounded-xl py-3.5 px-4 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-600 ${availabilityError ? 'border-red-500/80' : 'border-white/10'}`}
                 />
                 {availabilityError && (
@@ -594,7 +595,7 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
                   {isSending ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    'Send — jeg ringer inden for 24 timer'
+                    'Send — jeg booker et møde med dig inden 24 timer'
                   )}
                 </button>
               </div>

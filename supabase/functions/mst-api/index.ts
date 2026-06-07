@@ -84,6 +84,7 @@ serve(async (req) => {
         .from('price_calculator_submissions')
         .insert({
           email,
+          message: (availability || '').trim(),
           selections: {
             business_type: businessType || '',
             needs_extra_pages: needsExtraPages ?? false,

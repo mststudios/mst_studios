@@ -53,7 +53,10 @@ export const submitCookieConsent = async (status: string): Promise<void> => {
   const baseUrl = import.meta.env.VITE_API_URL
   const response = await fetch(`${baseUrl}/cookie-consent`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+    },
     body: JSON.stringify({
       status,
       userAgent: navigator.userAgent,
@@ -90,6 +93,7 @@ export const submitCalculatorLead = async (data: CalculatorLeadPayload): Promise
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
       },
       body: JSON.stringify(data),
     });

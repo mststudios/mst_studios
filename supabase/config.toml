@@ -12,5 +12,3 @@ port = 54323
 [inbucket]
 port = 54324
 
-[storage]
-port = 54325
