@@ -6,6 +6,24 @@
     <title>MST Studios | Professionelle CRO Hjemmesider</title>
     <meta name="description" content="Jeg bygger din højt-konverterende hjemmeside. Ingen formularer, ingen besvær. Ring nu for et uforpligtende tilbud.">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                bg: '#000000',
+                card: '#111111',
+                border: '#222222',
+                text: '#ffffff',
+                muted: '#a0a0a0',
+                subtle: '#555555'
+              }
+            }
+          }
+        }
+      }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -85,7 +103,7 @@
       }
     </style>
   </head>
-  <body class="bg-slate-900 text-white overflow-x-hidden antialiased selection:bg-purple-500 selection:text-white">
+  <body class="bg-brand-bg text-brand-text overflow-x-hidden antialiased selection:bg-brand-muted selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
