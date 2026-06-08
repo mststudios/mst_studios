@@ -15,8 +15,8 @@ export const PrisButton: React.FC<ButtonProps> = ({ text, subText, className = "
   
   // Neon glow effects
   const variants = {
-    primary: "bg-white hover:bg-black text-black hover:text-white border border-white",
-    secondary: "bg-transparent hover:bg-white text-white hover:text-black border border-white"
+    primary: "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/50 hover:shadow-blue-600/50 border border-blue-400/30",
+    secondary: "bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 hover:border-purple-500/50 shadow-lg"
   };
 
   return (
@@ -26,11 +26,11 @@ export const PrisButton: React.FC<ButtonProps> = ({ text, subText, className = "
     >
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none"></div>
       
-      <div className="bg-white/10 p-2 rounded-full group-hover:rotate-12 transition-transform backdrop-blur-sm border border-brand-border">
-        <Zap className="w-6 h-6 fill-current" />
+      <div className="bg-white/10 p-2 rounded-full group-hover:rotate-12 transition-transform backdrop-blur-sm border border-white/10">
+        <Zap className="w-6 h-6 fill-current text-yellow-300" />
       </div>
       <div className="flex flex-col items-start leading-tight text-left relative z-10">
-        <span className="text-xs font-black uppercase opacity-80 tracking-widest text-inherit">{text}</span>
+        <span className="text-xs font-black uppercase opacity-80 tracking-widest text-blue-100">{text}</span>
         <span className="text-xl tracking-tight font-black italic">{subText}</span>
       </div>
     </button>
