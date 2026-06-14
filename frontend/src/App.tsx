@@ -12,7 +12,7 @@ import { PriceCalculator } from './components/PriceCalculator';
 import { StickyCTA } from './components/StickyCTA';
 import { PrivacyModal } from './components/PrivacyModal';
 import { CookieBanner } from './components/CookieBanner';
-import { Mail, ExternalLink, Sparkles, Code, Heart, Phone, Calculator, CheckCircle2, MapPin, Shield, Cookie, Zap, PiggyBank, Smartphone, Layout, TrendingUp, Users, PhoneCall, Eye, Monitor } from 'lucide-react';
+import { Mail, ExternalLink, Sparkles, Code, Heart, Phone, Calculator, CheckCircle2, MapPin, Shield, Cookie, Zap, PiggyBank, Smartphone, Layout, TrendingUp, Users, PhoneCall, Eye, Monitor, Tag, Calendar } from 'lucide-react';
 
 const Navbar: React.FC<{ onOpenCalc: () => void }> = ({ onOpenCalc }) => {
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
@@ -281,6 +281,30 @@ const ValueProposition: React.FC = () => {
     return () => observer.disconnect();
   }, []);
 
+  const cards = [
+    {
+      value: "299 kr/md",
+      title: "Alt inkluderet",
+      description: "Hosting, sikkerhed og løbende opdateringer. Ingen skjulte gebyrer, ingen overraskelser.",
+      icon: <Tag className="w-8 h-8 relative z-10" />,
+      colors: { bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-400', shadow: 'shadow-blue-500/10', glow: 'from-blue-600 to-cyan-600' }
+    },
+    {
+      value: "Online inden 14 dage",
+      title: "Fra møde til færdig side",
+      description: "En enkel proces hvor du altid ved hvad der sker og hvornår.",
+      icon: <Calendar className="w-8 h-8 relative z-10" />,
+      colors: { bg: 'bg-purple-500/10', border: 'border-purple-500/20', text: 'text-purple-400', shadow: 'shadow-purple-500/10', glow: 'from-purple-600 to-pink-600' }
+    },
+    {
+      value: "Direkte kontakt",
+      title: "Én kontaktperson",
+      description: "Du taler direkte med mig — ikke et bureau med 10 led. Hurtig kommunikation og fuld dedikation til dit projekt.",
+      icon: <Phone className="w-8 h-8 relative z-10" />,
+      colors: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', text: 'text-emerald-400', shadow: 'shadow-emerald-500/10', glow: 'from-emerald-600 to-teal-600' }
+    }
+  ];
+
   return (
     <section id="hvorfor" className="py-32 relative overflow-hidden bg-slate-900" ref={containerRef}>
       {/* Ambient background glow */}
@@ -288,57 +312,48 @@ const ValueProposition: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-24">
-          <div className="inline-block mb-6">
-            <span className="py-2 px-6 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-xs font-bold uppercase tracking-widest text-blue-300 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
-              Hvorfor vælge mig?
-            </span>
-          </div>
           <h2 className="text-4xl md:text-6xl font-black mb-8 italic tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 pb-2">
-            Værdi der kan mærkes direkte
+            Enkelt. Ærligt. Effektivt.
           </h2>
 
           <div className={`max-w-3xl mx-auto relative ${isVisible ? 'animate-fade-up' : 'opacity-0'}`}>
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl opacity-20 blur"></div>
             <div className="relative bg-slate-800 ring-1 ring-white/10 rounded-2xl p-8 backdrop-blur-xl">
               <p className="text-xl md:text-2xl text-slate-300 font-medium leading-relaxed">
-                "Ingen sælger-snak. Kun <span className="text-white font-bold underline decoration-purple-500/50 underline-offset-4">strategisk webdesign</span>, der konverterer besøgende til betalende kunder."
+                "Ingen overraskelser på fakturaen. Du ved præcis hvad du betaler — og hvad du får."
               </p>
             </div>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {VALUE_PROPS.map((prop, idx) => {
-            // Define unique colors per card
-            const colors = [
-              { bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-400', shadow: 'shadow-blue-500/10', glow: 'from-blue-600 to-cyan-600' },
-              { bg: 'bg-purple-500/10', border: 'border-purple-500/20', text: 'text-purple-400', shadow: 'shadow-purple-500/10', glow: 'from-purple-600 to-pink-600' },
-              { bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', text: 'text-emerald-400', shadow: 'shadow-emerald-500/10', glow: 'from-emerald-600 to-teal-600' },
-              { bg: 'bg-rose-500/10', border: 'border-rose-500/20', text: 'text-rose-400', shadow: 'shadow-rose-500/10', glow: 'from-rose-600 to-orange-600' },
-            ];
-            const theme = colors[idx % colors.length];
-
-            // Removed 'group' class and group-hover effects
+        <div className="grid md:grid-cols-3 gap-8">
+          {cards.map((card, idx) => {
             return (
-              <div key={idx} className={`relative ${isVisible ? `animate-fade-up animate-fade-up-delay-${(idx % 4) + 1}` : 'opacity-0'}`}>
-                <div className={`h-full bg-slate-800/80 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/5 ${theme.border} flex flex-col items-center text-center relative overflow-hidden shadow-2xl ${theme.shadow}`}>
+              <div key={idx} className={`relative ${isVisible ? `animate-fade-up animate-fade-up-delay-${(idx % 3) + 1}` : 'opacity-0'}`}>
+                <div className={`h-full bg-slate-800/80 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/5 ${card.colors.border} flex flex-col items-center text-center relative overflow-hidden shadow-2xl ${card.colors.shadow}`}>
 
-                  {/* Enhanced Icon Container - Removed scaling */}
-                  <div className="relative mb-8">
-                    {/* Rotated background square for depth */}
-                    <div className={`absolute inset-0 ${theme.bg} rounded-2xl rotate-6 opacity-50`}></div>
-                    <div className={`relative w-24 h-24 rounded-2xl flex items-center justify-center bg-slate-900/50 backdrop-blur-md border border-white/10 ${theme.text} shadow-inner`}>
-                      <div className={`absolute inset-0 bg-gradient-to-br ${theme.glow} opacity-10 rounded-2xl`}></div>
-                      {React.cloneElement(prop.icon as React.ReactElement<{ className?: string }>, { className: "w-10 h-10 relative z-10" })}
+                  {/* Icon Container */}
+                  <div className="relative mb-6">
+                    <div className={`absolute inset-0 ${card.colors.bg} rounded-2xl rotate-6 opacity-50`}></div>
+                    <div className={`relative w-16 h-16 rounded-2xl flex items-center justify-center bg-slate-900/50 backdrop-blur-md border border-white/10 ${card.colors.text} shadow-inner`}>
+                      <div className={`absolute inset-0 bg-gradient-to-br ${card.colors.glow} opacity-10 rounded-2xl`}></div>
+                      {card.icon}
                     </div>
                   </div>
 
-                  <h3 className="text-xl font-black text-white mb-4 leading-tight">
-                    {prop.title}
+                  {/* Value prominently at the top */}
+                  <div className="text-2xl sm:text-3xl font-black text-white mb-2 italic tracking-tight">
+                    {card.value}
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-lg font-bold text-slate-300 mb-4 leading-tight">
+                    {card.title}
                   </h3>
 
+                  {/* Description */}
                   <p className="text-slate-400 font-medium leading-relaxed text-sm">
-                    {prop.description}
+                    {card.description}
                   </p>
                 </div>
               </div>
@@ -709,50 +724,6 @@ const AboutMe: React.FC = () => {
   );
 };
 
-const FinalCTA: React.FC<{ onOpenCalc: () => void }> = ({ onOpenCalc }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsVisible(entry.isIntersecting);
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -80px 0px' }
-    );
-
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <section className="py-32 px-4 md:px-8 text-center bg-slate-900" ref={containerRef}>
-      <div className={`max-w-6xl mx-auto bg-gradient-to-br from-blue-600 to-purple-800 rounded-[4rem] p-16 md:p-32 text-white shadow-2xl overflow-hidden relative border border-white/10 ${isVisible ? 'animate-fade-up' : 'opacity-0'}`}>
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/20 to-transparent"></div>
-
-        <div className="relative z-10">
-          <div className="flex flex-wrap justify-center gap-3 mb-8">
-            <span className="bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-xs font-bold text-white/80">⚡ Under 2 minutter</span>
-            <span className="bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-xs font-bold text-white/80">✓ Ingen forpligtelse</span>
-            <span className="bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-xs font-bold text-white/80">🔒 Gratis estimat</span>
-          </div>
-          <h2 className="text-5xl md:text-7xl font-black mb-10 italic tracking-tight leading-tight drop-shadow-lg">Hvad koster din <br />nye hjemmeside?</h2>
-          <p className="text-xl text-blue-100 mb-12 max-w-xl mx-auto font-medium leading-relaxed">
-            Ingen forpligtelse. Ingen skjulte gebyrer. <br />
-            <span className="text-white font-black">Se hvad din hjemmeside koster på under 2 minutter.</span>
-          </p>
-          <div className="flex flex-col items-center gap-8">
-            <PrisButton text="Beregn Pris Nu" subText="Gratis og uforpligtende" onClick={onOpenCalc} />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
 
 interface FooterProps {
   onOpenCalc: () => void;
@@ -927,7 +898,6 @@ const App: React.FC = () => {
       <Process onOpenCalc={() => setIsCalcOpen(true)} />
       <Portfolio />
       <AboutMe />
-      <FinalCTA onOpenCalc={() => setIsCalcOpen(true)} />
       <Footer
         onOpenCalc={() => setIsCalcOpen(true)}
         onOpenPrivacy={() => setIsPrivacyOpen(true)}

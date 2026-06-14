@@ -127,6 +127,37 @@ export const PriceCalculator: React.FC<PriceCalculatorProps> = ({ isOpen, onClos
     setAvailabilityError(!hasAvailability);
     if (!hasName || !hasValidEmail || !hasAvailability || !selectedPackage) return;
 
+    // Rate Limiting Check: Max 3 submissions per 10 minutes
+    const submissionsKey = 'mst_calc_submissions';
+    const now = Date.now();
+    const tenMinutes = 10 * 60 * 1000;
+    
+    let timestamps: number[] = [];
+    try {
+      const stored = localStorage.getItem(submissionsKey);
+      if (stored) {
+        timestamps = JSON.parse(stored);
+      }
+    } catch (e) {
+      console.error('Failed to parse submission timestamps', e);
+    }
+    
+    // Filter out timestamps older than 10 minutes
+    timestamps = timestamps.filter(t => now - t < tenMinutes);
+    
+    if (timestamps.length >= 3) {
+      alert('Du har indsendt for mange gange. Prøv igen om lidt.');
+      return;
+    }
+
+    // Record submission attempt
+    timestamps.push(now);
+    try {
+      localStorage.setItem(submissionsKey, JSON.stringify(timestamps));
+    } catch (e) {
+      console.error('Failed to save submission timestamp', e);
+    }
+
     setIsSending(true);
     console.log("Form submitted");
 

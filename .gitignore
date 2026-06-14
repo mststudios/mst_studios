@@ -1,5 +1,8 @@
 # Environment Variables
 .env
+.env.local
+.env.*
+**/.env*
 
 # Logs
 logs
@@ -26,3 +29,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+.vercel
